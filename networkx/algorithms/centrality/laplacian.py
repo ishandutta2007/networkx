@@ -1,12 +1,13 @@
 """
 Laplacian centrality measures.
 """
+
 import networkx as nx
 
 __all__ = ["laplacian_centrality"]
 
 
-@nx._dispatch(edge_attrs="weight")
+@nx._dispatchable(edge_attrs="weight")
 def laplacian_centrality(
     G, normalized=True, nodelist=None, weight="weight", walk_type=None, alpha=0.95
 ):
@@ -50,8 +51,11 @@ def laplacian_centrality(
     walk_type : string or None, optional (default=None)
         Optional parameter `walk_type` used when calling
         :func:`directed_laplacian_matrix <networkx.directed_laplacian_matrix>`.
-        If None, the transition matrix is selected depending on the properties
-        of the graph. Otherwise can be `random`, `lazy`, or `pagerank`.
+        One of ``"random"``, ``"lazy"``, or ``"pagerank"``. If ``walk_type=None``
+        (the default), then a value is selected according to the properties of `G`:
+        - ``walk_type="random"`` if `G` is strongly connected and aperiodic
+        - ``walk_type="lazy"`` if `G` is strongly connected but not aperiodic
+        - ``walk_type="pagerank"`` for all other cases.
 
     alpha : real (default = 0.95)
         Optional parameter `alpha` used when calling
@@ -118,7 +122,7 @@ def laplacian_centrality(
     else:
         lap_matrix = nx.laplacian_matrix(G, nodes, weight).toarray()
 
-    full_energy = np.power(sp.linalg.eigh(lap_matrix, eigvals_only=True), 2).sum()
+    full_energy = np.sum(lap_matrix**2)
 
     # calculate laplacian centrality
     laplace_centralities_dict = {}
@@ -133,7 +137,7 @@ def laplacian_centrality(
         np.fill_diagonal(A_2, new_diag[all_but_i])
 
         if len(all_but_i) > 0:  # catches degenerate case of single node
-            new_energy = np.power(sp.linalg.eigh(A_2, eigvals_only=True), 2).sum()
+            new_energy = np.sum(A_2**2)
         else:
             new_energy = 0.0
 
@@ -141,6 +145,6 @@ def laplacian_centrality(
         if normalized:
             lapl_cent = lapl_cent / full_energy
 
-        laplace_centralities_dict[node] = lapl_cent
+        laplace_centralities_dict[node] = float(lapl_cent)
 
     return laplace_centralities_dict

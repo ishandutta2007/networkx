@@ -10,6 +10,18 @@ These ideas can be used as projects for Google Summer of Code, Outreachy,
 NumFOCUS Small Development Grants and university course/project credits (if
 your university allows contribution to open source for credit).
 
+If you are a professor interested in having your class develop tools
+and contribute the results to NetworkX, we welcome your submissions!
+We encourage you to consider rewriting/improving existing functions
+as a potential source of projects. Working off of and
+improving existing tools involves reading, evaluating and writing code,
+rather than just writing new code. We also encourage them to review each
+other's PRs. You can have students submit their PRs to your personal fork,
+discuss, review, etc in an environment conducive to mentoring and learning.
+Once their branch is ready to merge, it can be submitted to the main NetworkX
+repository. This will help keep in-class discussions separate from the
+broader NetworkX review process, making both more manageable and readable.
+Feel free to reach out to use as you plan these activities.
 
 Pedagogical Interactive Notebooks for Algorithms Implemented in NetworkX
 ------------------------------------------------------------------------
@@ -34,7 +46,7 @@ Pedagogical Interactive Notebooks for Algorithms Implemented in NetworkX
 
 - Interested Mentors: `@MridulS <https://github.com/MridulS/>`__,
   `@rossbar <https://github.com/rossbar/>`__
-  
+
 - Expected time commitment: This project can be either a medium project (~175 hours)
   or a large project (~350 hours). The contributor is expected to contribute 2-3
   pedagogical interactive notebooks for the medium duration project and 4-5 notebooks
@@ -57,6 +69,7 @@ Visualization API with Matplotlib
   as well as code in the form of PR(s) which implement (part of) that API with tests.
 
 - Interested Mentors: `@dschult <https://github.com/dschult/>`__,
+  `@rossbar <https://github.com/rossbar/>`__
 
 - Expected time commitment: This project will be a full time 10 week project (~350 hrs).
 
@@ -77,26 +90,59 @@ Incorporate a Python library for ISMAGs isomorphism calculations
   with code to do that incorporation.
 
 - Interested Mentors: `@dschult <https://github.com/dschult/>`__,
+  `@rossbar <https://github.com/rossbar/>`__
 
 - Expected time commitment: This project will be a full time 10 week project (~350 hrs).
 
+Centrality Atlas
+----------------
+
+- Abstract: The goal of this project would be to produce a comprehensive review
+  of network centrality measures.
+  Centrality is a central concept in network science and has many applications
+  across domains. NetworkX provides many functions for measuring
+  various types of :doc:`network centrality</reference/algorithms/centrality>`.
+  The individual centrality functions are typically well-described by their
+  docstrings (though there's always room for improvement!); however, there
+  currently is no big-picture overview of centrality.
+  Furthermore, many of the centrality measures are closely related, but there is
+  no documentation that describes these relationships.
+
+- Recommended Skills: Python, literature review, technical writing
+
+- Expected Outcome: An executable document that provides an overview and applications
+  of network centrality measures. Potential outputs include (but are not limited
+  to): an article for ``nx-guides`` (see above) and/or an example gallery for centrality
+  measures.
+
+- Interested Mentors: `@dschult <https://github.com/dschult/>`__,
+  `@rossbar <https://github.com/rossbar/>`__
+
+- Expected time commitment: Variable, though a high-quality review article would
+  be expected to take several months of dedicated research (~350 hours).
+
 Completed Projects
 ==================
+
+- `Revisiting and expanding nx-parallel`_
+    - Program: Google Summer of Code 2024
+    - Contributor: `@Schefflera-Arboricola <https://github.com/Schefflera-Arboricola>`__
+    - Link to Proposal: `GSoC 2024: Revisiting and expanding nx-parallel <https://github.com/networkx/archive/blob/main/proposals-gsoc/GSoC-2024-Revisiting-and-expanding-nx-parallel.pdf>`_
 
 - `VF2++ algorithm for graph isomorphism`_
     - Program: Google Summer of Code 2022
     - Contributor: `@kpetridis24 <https://github.com/kpetridis24/>`__
     - Link to Proposal: `GSoC 2022: VF2++ Algorithm <https://github.com/networkx/archive/blob/main/proposals-gsoc/GSoC-2022-VF2plusplus-isomorphism.pdf>`_
 
-- `Louvain community detection algorithm`_ 
+- `Louvain community detection algorithm`_
     - Program: Google Summer of Code 2021
     - Contributor: `@z3y50n <https://github.com/z3y50n/>`__
-    - Link to Proposal:  `GSoC 2021: Community Detection Algorithms <https://github.com/networkx/archive/blob/main/proposals-gsoc/GSoC-2021-Community-Detection-Algorithms.pdf>`__ 
+    - Link to Proposal:  `GSoC 2021: Community Detection Algorithms <https://github.com/networkx/archive/blob/main/proposals-gsoc/GSoC-2021-Community-Detection-Algorithms.pdf>`__
 
 - `Asadpour algorithm for directed travelling salesman problem`_
     - Program: Google Summer of Code 2021
     - Contributor: `@mjschwenne <https://github.com/mjschwenne/>`__
-    - Link to Proposal:  `GSoC 2021: Asadpour algorithm <https://github.com/networkx/archive/blob/main/proposals-gsoc/GSoC-2021-Asadpour-Asymmetric-Traveling%20Salesman-Problem.pdf>`__ 
+    - Link to Proposal:  `GSoC 2021: Asadpour algorithm <https://github.com/networkx/archive/blob/main/proposals-gsoc/GSoC-2021-Asadpour-Asymmetric-Traveling%20Salesman-Problem.pdf>`__
 
 - Pedagogical notebook: `Directed acyclic graphs and topological sort`_
     - Program: Google Summer of Code 2021
@@ -116,6 +162,7 @@ Completed Projects
     - Contributor: `@MridulS <https://github.com/MridulS/>`__
     - Link to Proposal: `GSoC 2015: NetworkX 2.0 API <https://github.com/networkx/archive/blob/main/proposals-gsoc/GSoC-2015-NetworkX-2.0-api.md>`__
 
+.. _`Revisiting and expanding nx-parallel`: https://github.com/Schefflera-Arboricola/blogs/tree/main/networkx/GSoC24
 .. _`VF2++ algorithm for graph isomorphism`: https://github.com/networkx/networkx/pull/5788
 .. _`Louvain community detection algorithm`: https://github.com/networkx/networkx/pull/4929
 .. _`Asadpour algorithm for directed travelling salesman problem`: https://github.com/networkx/networkx/pull/4740
@@ -128,14 +175,14 @@ Completed Projects
 ..
    Project Idea Template
    ---------------------
-   
+
    - Abstract:
-   
+
    - Recommended Skills:
-   
+
    - Expected Outcome:
-   
+
    - Complexity;
-   
+
    - Interested Mentors:
-   
+

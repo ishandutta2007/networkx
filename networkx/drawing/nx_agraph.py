@@ -17,6 +17,7 @@ See Also
  - Graphviz:      https://www.graphviz.org
  - DOT Language:  http://www.graphviz.org/doc/info/lang.html
 """
+
 import os
 import tempfile
 
@@ -33,7 +34,7 @@ __all__ = [
 ]
 
 
-@nx._dispatch(graphs=None)
+@nx._dispatchable(graphs=None, returns_graph=True)
 def from_agraph(A, create_using=None):
     """Returns a NetworkX Graph or DiGraph from a PyGraphviz graph.
 
@@ -133,17 +134,9 @@ def to_agraph(N):
     try:
         import pygraphviz
     except ImportError as err:
-        raise ImportError(
-            "requires pygraphviz " "http://pygraphviz.github.io/"
-        ) from err
+        raise ImportError("requires pygraphviz http://pygraphviz.github.io/") from err
     directed = N.is_directed()
     strict = nx.number_of_selfloops(N) == 0 and not N.is_multigraph()
-
-    for node in N:
-        if "pos" in N.nodes[node]:
-            N.nodes[node]["pos"] = "{},{}!".format(
-                N.nodes[node]["pos"][0], N.nodes[node]["pos"][1]
-            )
 
     A = pygraphviz.AGraph(name=N.name, strict=strict, directed=directed)
 
@@ -161,7 +154,11 @@ def to_agraph(N):
         A.add_node(n)
         # Add node data
         a = A.get_node(n)
-        a.attr.update({k: str(v) for k, v in nodedata.items()})
+        for key, val in nodedata.items():
+            if key == "pos":
+                a.attr["pos"] = f"{val[0]},{val[1]}!"
+            else:
+                a.attr[key] = str(val)
 
     # loop over edges
     if N.is_multigraph():
@@ -205,7 +202,7 @@ def write_dot(G, path):
     return
 
 
-@nx._dispatch(name="agraph_read_dot", graphs=None)
+@nx._dispatchable(name="agraph_read_dot", graphs=None, returns_graph=True)
 def read_dot(path):
     """Returns a NetworkX graph from a dot file on path.
 
@@ -218,7 +215,7 @@ def read_dot(path):
         import pygraphviz
     except ImportError as err:
         raise ImportError(
-            "read_dot() requires pygraphviz " "http://pygraphviz.github.io/"
+            "read_dot() requires pygraphviz http://pygraphviz.github.io/"
         ) from err
     A = pygraphviz.AGraph(file=path)
     gr = from_agraph(A)
@@ -294,7 +291,7 @@ def pygraphviz_layout(G, prog="neato", root=None, args=""):
     for the layout computation using something similar to::
 
         >>> H = nx.convert_node_labels_to_integers(G, label_attribute="node_label")
-        >>> H_layout = nx.nx_agraph.pygraphviz_layout(G, prog="dot")
+        >>> H_layout = nx.nx_agraph.pygraphviz_layout(H, prog="dot")
         >>> G_layout = {H.nodes[n]["node_label"]: p for n, p in H_layout.items()}
 
     Note that some graphviz layouts are not guaranteed to be deterministic,
@@ -303,9 +300,7 @@ def pygraphviz_layout(G, prog="neato", root=None, args=""):
     try:
         import pygraphviz
     except ImportError as err:
-        raise ImportError(
-            "requires pygraphviz " "http://pygraphviz.github.io/"
-        ) from err
+        raise ImportError("requires pygraphviz http://pygraphviz.github.io/") from err
     if root is not None:
         args += f"-Groot={root}"
     A = to_agraph(G)
@@ -348,6 +343,7 @@ def view_pygraphviz(
     path : str, None
         The filename used to save the image.  If None, save to a temporary
         file.  File formats are the same as those from pygraphviz.agraph.draw.
+        Filenames ending in .gz or .bz2 will be compressed.
     show : bool, default = True
         Whether to display the graph with :mod:`PIL.Image.show`,
         default is `True`. If `False`, the rendered graph is still available

@@ -1,3 +1,4 @@
+import math
 from random import Random
 
 import pytest
@@ -15,8 +16,7 @@ def test__extrema_bounding_invalid_compute_kwarg():
 
 class TestDistance:
     def setup_method(self):
-        G = cnlti(nx.grid_2d_graph(4, 4), first_label=1, ordering="sorted")
-        self.G = G
+        self.G = cnlti(nx.grid_2d_graph(4, 4), first_label=1, ordering="sorted")
 
     def test_eccentricity(self):
         assert nx.eccentricity(self.G, 1) == 6
@@ -51,6 +51,35 @@ class TestDistance:
 
     def test_diameter(self):
         assert nx.diameter(self.G) == 6
+
+    def test_harmonic_diameter(self):
+        assert nx.harmonic_diameter(self.G) == pytest.approx(2.0477815699658715)
+        assert nx.harmonic_diameter(nx.star_graph(3)) == pytest.approx(1.333333)
+
+    def test_harmonic_diameter_empty(self):
+        assert math.isnan(nx.harmonic_diameter(nx.empty_graph()))
+
+    def test_harmonic_diameter_single_node(self):
+        assert math.isnan(nx.harmonic_diameter(nx.empty_graph(1)))
+
+    def test_harmonic_diameter_discrete(self):
+        assert math.isinf(nx.harmonic_diameter(nx.empty_graph(3)))
+
+    def test_harmonic_diameter_not_strongly_connected(self):
+        DG = nx.DiGraph()
+        DG.add_edge(0, 1)
+        assert nx.harmonic_diameter(DG) == 2
+
+    def test_harmonic_diameter_weighted_paths(self):
+        G = nx.star_graph(3)
+        # check defaults
+        G.add_weighted_edges_from([(*e, 1) for i, e in enumerate(G.edges)], "weight")
+        assert nx.harmonic_diameter(G) == pytest.approx(1.333333)
+        assert nx.harmonic_diameter(G, weight="weight") == pytest.approx(1.333333)
+
+        # check impact of weights and alternate weight name
+        G.add_weighted_edges_from([(*e, i) for i, e in enumerate(G.edges)], "dist")
+        assert nx.harmonic_diameter(G, weight="dist") == pytest.approx(1.8)
 
     def test_radius(self):
         assert nx.radius(self.G) == 4
@@ -324,6 +353,7 @@ class TestResistanceDistance:
     def setup_class(cls):
         global np
         np = pytest.importorskip("numpy")
+        sp = pytest.importorskip("scipy")
 
     def setup_method(self):
         G = nx.Graph()
@@ -423,6 +453,92 @@ class TestResistanceDistance:
         assert round(rd[1][3], 5) == 1
 
 
+class TestEffectiveGraphResistance:
+    @classmethod
+    def setup_class(cls):
+        global np
+        np = pytest.importorskip("numpy")
+        sp = pytest.importorskip("scipy")
+
+    def setup_method(self):
+        G = nx.Graph()
+        G.add_edge(1, 2, weight=2)
+        G.add_edge(1, 3, weight=1)
+        G.add_edge(2, 3, weight=4)
+        self.G = G
+
+    def test_effective_graph_resistance_directed_graph(self):
+        G = nx.DiGraph()
+        with pytest.raises(nx.NetworkXNotImplemented):
+            nx.effective_graph_resistance(G)
+
+    def test_effective_graph_resistance_empty(self):
+        G = nx.Graph()
+        with pytest.raises(nx.NetworkXError):
+            nx.effective_graph_resistance(G)
+
+    def test_effective_graph_resistance_not_connected(self):
+        G = nx.Graph([(1, 2), (3, 4)])
+        RG = nx.effective_graph_resistance(G)
+        assert np.isinf(RG)
+
+    def test_effective_graph_resistance(self):
+        RG = nx.effective_graph_resistance(self.G, "weight", True)
+        rd12 = 1 / (1 / (1 + 4) + 1 / 2)
+        rd13 = 1 / (1 / (1 + 2) + 1 / 4)
+        rd23 = 1 / (1 / (2 + 4) + 1 / 1)
+        assert np.isclose(RG, rd12 + rd13 + rd23)
+
+    def test_effective_graph_resistance_noinv(self):
+        RG = nx.effective_graph_resistance(self.G, "weight", False)
+        rd12 = 1 / (1 / (1 / 1 + 1 / 4) + 1 / (1 / 2))
+        rd13 = 1 / (1 / (1 / 1 + 1 / 2) + 1 / (1 / 4))
+        rd23 = 1 / (1 / (1 / 2 + 1 / 4) + 1 / (1 / 1))
+        assert np.isclose(RG, rd12 + rd13 + rd23)
+
+    def test_effective_graph_resistance_no_weight(self):
+        RG = nx.effective_graph_resistance(self.G)
+        assert np.isclose(RG, 2)
+
+    def test_effective_graph_resistance_neg_weight(self):
+        self.G[2][3]["weight"] = -4
+        RG = nx.effective_graph_resistance(self.G, "weight", True)
+        rd12 = 1 / (1 / (1 + -4) + 1 / 2)
+        rd13 = 1 / (1 / (1 + 2) + 1 / (-4))
+        rd23 = 1 / (1 / (2 + -4) + 1 / 1)
+        assert np.isclose(RG, rd12 + rd13 + rd23)
+
+    def test_effective_graph_resistance_multigraph(self):
+        G = nx.MultiGraph()
+        G.add_edge(1, 2, weight=2)
+        G.add_edge(1, 3, weight=1)
+        G.add_edge(2, 3, weight=1)
+        G.add_edge(2, 3, weight=3)
+        RG = nx.effective_graph_resistance(G, "weight", True)
+        edge23 = 1 / (1 / 1 + 1 / 3)
+        rd12 = 1 / (1 / (1 + edge23) + 1 / 2)
+        rd13 = 1 / (1 / (1 + 2) + 1 / edge23)
+        rd23 = 1 / (1 / (2 + edge23) + 1 / 1)
+        assert np.isclose(RG, rd12 + rd13 + rd23)
+
+    def test_effective_graph_resistance_div0(self):
+        with pytest.raises(ZeroDivisionError):
+            self.G[1][2]["weight"] = 0
+            nx.effective_graph_resistance(self.G, "weight")
+
+    def test_effective_graph_resistance_complete_graph(self):
+        N = 10
+        G = nx.complete_graph(N)
+        RG = nx.effective_graph_resistance(G)
+        assert np.isclose(RG, N - 1)
+
+    def test_effective_graph_resistance_path_graph(self):
+        N = 10
+        G = nx.path_graph(N)
+        RG = nx.effective_graph_resistance(G)
+        assert np.isclose(RG, (N - 1) * N * (N + 1) // 6)
+
+
 class TestBarycenter:
     """Test :func:`networkx.algorithms.distance_measures.barycenter`."""
 
@@ -515,6 +631,7 @@ class TestKemenyConstant:
     def setup_class(cls):
         global np
         np = pytest.importorskip("numpy")
+        sp = pytest.importorskip("scipy")
 
     def setup_method(self):
         G = nx.Graph()

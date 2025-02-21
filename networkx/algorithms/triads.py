@@ -13,11 +13,9 @@ from networkx.utils import not_implemented_for, py_random_state
 __all__ = [
     "triadic_census",
     "is_triad",
-    "all_triplets",
     "all_triads",
     "triads_by_type",
     "triad_type",
-    "random_triad",
 ]
 
 #: The integer codes representing each type of triad.
@@ -129,7 +127,7 @@ def _tricode(G, v, u, w):
 
 
 @not_implemented_for("undirected")
-@nx._dispatch
+@nx._dispatchable
 def triadic_census(G, nodelist=None):
     """Determines the triadic census of a directed graph.
 
@@ -155,7 +153,6 @@ def triadic_census(G, nodelist=None):
     >>> triadic_census = nx.triadic_census(G)
     >>> for key, value in triadic_census.items():
     ...     print(f"{key}: {value}")
-    ...
     003: 0
     012: 0
     102: 0
@@ -177,6 +174,11 @@ def triadic_census(G, nodelist=None):
     -----
     This algorithm has complexity $O(m)$ where $m$ is the number of edges in
     the graph.
+
+    For undirected graphs, the triadic census can be computed by first converting
+    the graph into a directed graph using the ``G.to_directed()`` method.
+    After this conversion, only the triad types 003, 102, 201 and 300 will be
+    present in the undirected scenario.
 
     Raises
     ------
@@ -276,7 +278,7 @@ def triadic_census(G, nodelist=None):
     return census
 
 
-@nx._dispatch
+@nx._dispatchable
 def is_triad(G):
     """Returns True if the graph G is a triad, else False.
 
@@ -307,33 +309,7 @@ def is_triad(G):
 
 
 @not_implemented_for("undirected")
-@nx._dispatch
-def all_triplets(G):
-    """Returns a generator of all possible sets of 3 nodes in a DiGraph.
-
-    Parameters
-    ----------
-    G : digraph
-       A NetworkX DiGraph
-
-    Returns
-    -------
-    triplets : generator of 3-tuples
-       Generator of tuples of 3 nodes
-
-    Examples
-    --------
-    >>> G = nx.DiGraph([(1, 2), (2, 3), (3, 4)])
-    >>> list(nx.all_triplets(G))
-    [(1, 2, 3), (1, 2, 4), (1, 3, 4), (2, 3, 4)]
-
-    """
-    triplets = combinations(G.nodes(), 3)
-    return triplets
-
-
-@not_implemented_for("undirected")
-@nx._dispatch
+@nx._dispatchable(returns_graph=True)
 def all_triads(G):
     """A generator of all possible triads in G.
 
@@ -364,7 +340,7 @@ def all_triads(G):
 
 
 @not_implemented_for("undirected")
-@nx._dispatch
+@nx._dispatchable
 def triads_by_type(G):
     """Returns a list of all triads for each triad type in a directed graph.
     There are exactly 16 different types of triads possible. Suppose 1, 2, 3 are three
@@ -405,9 +381,9 @@ def triads_by_type(G):
     --------
     >>> G = nx.DiGraph([(1, 2), (1, 3), (2, 3), (3, 1), (5, 6), (5, 4), (6, 7)])
     >>> dict = nx.triads_by_type(G)
-    >>> dict['120C'][0].edges()
+    >>> dict["120C"][0].edges()
     OutEdgeView([(1, 2), (1, 3), (2, 3), (3, 1)])
-    >>> dict['012'][0].edges()
+    >>> dict["012"][0].edges()
     OutEdgeView([(1, 2)])
 
     References
@@ -427,7 +403,7 @@ def triads_by_type(G):
 
 
 @not_implemented_for("undirected")
-@nx._dispatch
+@nx._dispatchable
 def triad_type(G):
     """Returns the sociological triad type for a triad.
 
@@ -522,44 +498,3 @@ def triad_type(G):
         return "210"
     elif num_edges == 6:
         return "300"
-
-
-@not_implemented_for("undirected")
-@py_random_state(1)
-@nx._dispatch
-def random_triad(G, seed=None):
-    """Returns a random triad from a directed graph.
-
-    Parameters
-    ----------
-    G : digraph
-       A NetworkX DiGraph
-    seed : integer, random_state, or None (default)
-        Indicator of random number generation state.
-        See :ref:`Randomness<randomness>`.
-
-    Returns
-    -------
-    G2 : subgraph
-       A randomly selected triad (order-3 NetworkX DiGraph)
-
-    Raises
-    ------
-    NetworkXError
-        If the input Graph has less than 3 nodes.
-
-    Examples
-    --------
-    >>> G = nx.DiGraph([(1, 2), (1, 3), (2, 3), (3, 1), (5, 6), (5, 4), (6, 7)])
-    >>> triad = nx.random_triad(G, seed=1)
-    >>> triad.edges
-    OutEdgeView([(1, 2)])
-
-    """
-    if len(G) < 3:
-        raise nx.NetworkXError(
-            f"G needs at least 3 nodes to form a triad; (it has {len(G)} nodes)"
-        )
-    nodes = seed.sample(list(G.nodes()), 3)
-    G2 = G.subgraph(nodes)
-    return G2

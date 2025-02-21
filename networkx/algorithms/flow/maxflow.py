@@ -1,6 +1,7 @@
 """
 Maximum flow (and minimum cut) algorithms on capacitated graphs.
 """
+
 import networkx as nx
 
 from .boykovkolmogorov import boykov_kolmogorov
@@ -16,7 +17,7 @@ default_flow_func = preflow_push
 __all__ = ["maximum_flow", "maximum_flow_value", "minimum_cut", "minimum_cut_value"]
 
 
-@nx._dispatch(graphs="flowG", edge_attrs={"capacity": float("inf")})
+@nx._dispatchable(graphs="flowG", edge_attrs={"capacity": float("inf")})
 def maximum_flow(flowG, _s, _t, capacity="capacity", flow_func=None, **kwargs):
     """Find a maximum single-commodity flow.
 
@@ -163,7 +164,7 @@ def maximum_flow(flowG, _s, _t, capacity="capacity", flow_func=None, **kwargs):
     return (R.graph["flow_value"], flow_dict)
 
 
-@nx._dispatch(graphs="flowG", edge_attrs={"capacity": float("inf")})
+@nx._dispatchable(graphs="flowG", edge_attrs={"capacity": float("inf")})
 def maximum_flow_value(flowG, _s, _t, capacity="capacity", flow_func=None, **kwargs):
     """Find the value of maximum single-commodity flow.
 
@@ -303,7 +304,7 @@ def maximum_flow_value(flowG, _s, _t, capacity="capacity", flow_func=None, **kwa
     return R.graph["flow_value"]
 
 
-@nx._dispatch(graphs="flowG", edge_attrs={"capacity": float("inf")})
+@nx._dispatchable(graphs="flowG", edge_attrs={"capacity": float("inf")})
 def minimum_cut(flowG, _s, _t, capacity="capacity", flow_func=None, **kwargs):
     """Compute the value and the node partition of a minimum (s, t)-cut.
 
@@ -462,12 +463,11 @@ def minimum_cut(flowG, _s, _t, capacity="capacity", flow_func=None, **kwargs):
     partition = (set(flowG) - non_reachable, non_reachable)
     # Finally add again cutset edges to the residual network to make
     # sure that it is reusable.
-    if cutset is not None:
-        R.add_edges_from(cutset)
+    R.add_edges_from(cutset)
     return (R.graph["flow_value"], partition)
 
 
-@nx._dispatch(graphs="flowG", edge_attrs={"capacity": float("inf")})
+@nx._dispatchable(graphs="flowG", edge_attrs={"capacity": float("inf")})
 def minimum_cut_value(flowG, _s, _t, capacity="capacity", flow_func=None, **kwargs):
     """Compute the value of a minimum (s, t)-cut.
 
