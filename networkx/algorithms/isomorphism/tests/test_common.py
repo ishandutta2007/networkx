@@ -520,6 +520,29 @@ def test_graph_input_order(morphism):
 
 
 @pytest.mark.parametrize("Gclass", graph_classes)
+@pytest.mark.parametrize("iso_ic, iso_iter", morphic_and_mapping)
+def test_full_graph_or_subgraph_isomorphisms_iter(Gclass, iso_ic, iso_iter):
+    # motivated by gh-8891 which reported getting a subgraph_iso from iso_iter
+    # so is_isomorphic was False while isomorphisms_iter yielded mappings
+    G1 = nx.empty_graph(2, create_using=Gclass)
+    G2 = nx.empty_graph(1, create_using=Gclass)
+
+    any_mappings = bool(list(iso_iter(G1, G2)))
+    subgraph_or_mono = "SG" in iso_ic.__name__
+    assert iso_ic(G1, G2) == any_mappings
+    assert any_mappings == subgraph_or_mono
+
+    # same with disconnected example that doesn't have any isolated nodes see gh-8895
+    G2 = nx.path_graph(2, create_using=Gclass)
+    G1 = nx.disjoint_union(G2, G2)
+
+    any_mappings = bool(list(iso_iter(G1, G2)))
+    subgraph_or_mono = "SG" in iso_ic.__name__
+    assert iso_ic(G1, G2) == any_mappings
+    assert any_mappings == subgraph_or_mono
+
+
+@pytest.mark.parametrize("Gclass", graph_classes)
 @pytest.mark.parametrize("G", solo_graphs)
 @pytest.mark.parametrize("symmetry", [True, False])
 @pytest.mark.parametrize("iso_ic, iso_iter", morphic_and_mapping)
